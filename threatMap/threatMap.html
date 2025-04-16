@@ -107,6 +107,25 @@
           console.error("IP fetch error:", err);
           document.getElementById("results").innerHTML = `<p style="color:red;">Failed to fetch IP data.</p>`;
         });
+        // AbuseIPDB lookup (via Flask backend)
+    fetch(`https://marie-portfolio.onrender.com/check-ip?ip=${ip}`)
+        .then(res => res.json())
+        .then(data => {
+            const abuse = data.data;
+
+    if (!abuse) return;
+
+    document.getElementById("results").innerHTML += `
+      <p><strong>Abuse Score:</strong> ${abuse.abuseConfidenceScore} / 100</p>
+      <p><strong>Total Reports:</strong> ${abuse.totalReports}</p>
+      <p><strong>Last Reported:</strong> ${abuse.lastReportedAt || "N/A"}</p>
+      <p><strong>Categories:</strong> ${abuse.categories.join(", ") || "None"}</p>
+    `;
+  })
+  .catch(err => {
+    console.error("AbuseIPDB error:", err);
+  });
+
     }
   </script>
 </body>
