@@ -1,47 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Live Threat Map</title>
-  <link rel="stylesheet" href="assets/css/main.css"> 
+  <meta charset="UTF-8" />
+  <title>IP Threat Mapper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      text-align: center;
+      background: #f4f4f4;
+    }
+
+    header {
+      padding: 2rem;
+      background-color: #222;
+      color: white;
+    }
+
+    input, button {
+      padding: 0.6rem;
+      font-size: 1rem;
+      margin: 1rem 0.5rem;
+      width: 250px;
+      max-width: 80%;
+    }
+
+    #results {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    #map {
+      height: 450px;
+      width: 90%;
+      max-width: 1000px;
+      margin: 2rem auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    footer {
+      margin: 2rem 0;
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>Live Threat Map</h1>
-    <p>Simulated Global Cybersecurity Threats</p>
+    <h1>🛡️ IP Threat Mapper</h1>
+    <p>Enter any IP address to view location and ISP info.</p>
   </header>
 
-  <section class="map-container" style="padding: 2rem;">
-    <div id="map" style="height: 500px; border-radius: 10px;"></div>
-  </section>
+  <main>
+    <input type="text" id="ipInput" placeholder="e.g. 8.8.8.8 or 1.1.1.1" />
+    <button onclick="lookupIP()">Lookup IP</button>
+    <div id="results"></div>
+    <div id="map"></div>
+  </main>
 
   <footer>
-    <p>&copy; Marie Ament</p>
-    <p><a href="index.html">← Back to Home</a></p>
+    &copy; 2025 Marie Ament | Powered by ip-api.com + Leaflet
   </footer>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const map = L.map('map').setView([20, 0], 2);
-  
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    let map = L.map('map').setView([20, 0], 2);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-  
-    // Load threat data from threats.json
-    fetch('threatMap/threats.json')
-      .then(response => response.json())
-      .then(threats => {
-        threats.forEach(t => {
-          L.marker([t.lat, t.lon])
+
+    function lookupIP() {
+      const ip = document.getElementById("ipInput").value;
+      fetch(`http://ip-api.com/json/${ip}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "fail") {
+            document.getElementById("results").innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+            return;
+          }
+
+          const { city, country, isp, lat, lon } = data;
+
+          document.getElementById("results").innerHTML = `
+            <p><strong>IP:</strong> ${ip}</p>
+            <p><strong>Location:</strong> ${city}, ${country}</p>
+            <p><strong>ISP:</strong> ${isp}</p>
+          `;
+
+          map.setView([lat, lon], 6);
+          L.marker([lat, lon])
             .addTo(map)
-            .bindPopup(`<strong>Threat:</strong> ${t.label}`);
+            .bindPopup(`<strong>${ip}</strong><br>${city}, ${country}<br>${isp}`)
+            .openPopup();
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          document.getElementById("results").innerHTML = `<p style="color:red;">Failed to fetch IP data.</p>`;
         });
-      })
-      .catch(error => {
-        console.error("Error loading threat data:", error);
-      });
+    }
   </script>
-  
 </body>
 </html>
