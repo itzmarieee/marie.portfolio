@@ -63,7 +63,7 @@
   </main>
 
   <footer>
-    &copy; 2025 Marie Ament | Powered by ip-api.com + Leaflet
+    &copy; 2025 Marie Ament | Powered by ipwhois.app + Leaflet
   </footer>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -76,30 +76,35 @@
 
     function lookupIP() {
       const ip = document.getElementById("ipInput").value;
+      if (!ip) {
+        document.getElementById("results").innerHTML = `<p style="color:red;">Please enter an IP address.</p>`;
+        return;
+      }
+
       fetch(`https://ipwhois.app/json/${ip}`)
         .then(res => res.json())
         .then(data => {
-          if (data.status === "fail") {
-            document.getElementById("results").innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+          if (!data.success) {
+            document.getElementById("results").innerHTML = `<p style="color:red;">Error: ${data.message || "Invalid IP"}</p>`;
             return;
           }
 
-          const { city, country, isp, lat, lon } = data;
+          const { ip: returnedIP, city, country, isp, latitude, longitude } = data;
 
           document.getElementById("results").innerHTML = `
-            <p><strong>IP:</strong> ${ip}</p>
+            <p><strong>IP:</strong> ${returnedIP}</p>
             <p><strong>Location:</strong> ${city}, ${country}</p>
             <p><strong>ISP:</strong> ${isp}</p>
           `;
 
-          map.setView([lat, lon], 6);
-          L.marker([lat, lon])
+          map.setView([latitude, longitude], 6);
+          L.marker([latitude, longitude])
             .addTo(map)
-            .bindPopup(`<strong>${ip}</strong><br>${city}, ${country}<br>${isp}`)
+            .bindPopup(`<strong>${returnedIP}</strong><br>${city}, ${country}<br>${isp}`)
             .openPopup();
         })
         .catch(err => {
-          console.error("Error:", err);
+          console.error("IP fetch error:", err);
           document.getElementById("results").innerHTML = `<p style="color:red;">Failed to fetch IP data.</p>`;
         });
     }
