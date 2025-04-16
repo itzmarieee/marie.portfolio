@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Threat Map</title>
+  <link rel="stylesheet" href="style.css"> <!-- Use your existing CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <header>
+    <h1>Live Threat Map</h1>
+    <p>Simulated Global Cybersecurity Threats</p>
+  </header>
+
+  <section class="map-container" style="padding: 2rem;">
+    <div id="map" style="height: 500px; border-radius: 10px;"></div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Marie Ament</p>
+    <p><a href="index.html">← Back to Home</a></p>
+  </footer>
+
+  <script>
+    const map = L.map('map').setView([20, 0], 2);
+  
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+  
+    // Load threat data from threats.json
+    fetch('threats.json')
+      .then(response => response.json())
+      .then(threats => {
+        threats.forEach(t => {
+          L.marker([t.lat, t.lon])
+            .addTo(map)
+            .bindPopup(`<strong>Threat:</strong> ${t.label}`);
+        });
+      })
+      .catch(error => {
+        console.error("Error loading threat data:", error);
+      });
+  </script>
+  
+</body>
+</html>
