@@ -76,7 +76,7 @@
 
     function lookupIP() {
       const ip = document.getElementById("ipInput").value;
-      fetch(`http://ip-api.com/json/${ip}`)
+      fetch(`https://ipwhois.app/json/${ip}`)
         .then(res => res.json())
         .then(data => {
           if (data.status === "fail") {
