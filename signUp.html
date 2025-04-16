@@ -1,0 +1,41 @@
+<h2>Create an Account</h2>
+<form id="signupForm">
+  <input type="text" id="username" placeholder="Username" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+  <button type="submit">Sign Up</button>
+</form>
+
+<script>
+  document.getElementById("signupForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    fetch('https://your-backend-api.com/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Account created! Redirecting to login...");
+        window.location.href = "login.html";
+      } else {
+        alert("Signup failed: " + data.message);
+      }
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      alert("Something went wrong.");
+    });
+  });
+</script>
